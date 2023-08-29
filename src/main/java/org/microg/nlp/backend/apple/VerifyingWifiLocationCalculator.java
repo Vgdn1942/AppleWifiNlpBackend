@@ -31,6 +31,7 @@ import java.util.Set;
 
 public class VerifyingWifiLocationCalculator {
     private static final String TAG = "AppleNlpCalculator";
+    private static final boolean DEBUG = false;
 
     private static final long ONE_DAY = 24 * 60 * 60 * 1000;
     private static final int MAX_WIFI_RADIUS = 500;
@@ -97,13 +98,13 @@ public class VerifyingWifiLocationCalculator {
         for (Set<Location> set : clsList) {
             sb.append(" ").append(set.size());
         }
-        Log.d(TAG, sb.toString());
+        if (DEBUG) Log.d(TAG, sb.toString());
         if (!clsList.isEmpty()) {
             Set<Location> cls = clsList.get(0);
             if (cls.size() == 1) {
                 Location location = cls.iterator().next();
                 if (isVerified(location)) {
-                    Log.d(TAG, "is single class, but verified.");
+                    if (DEBUG) Log.d(TAG, "is single class, but verified.");
                     return location;
                 }
                 return null;
@@ -116,13 +117,13 @@ public class VerifyingWifiLocationCalculator {
                     }
                 }
                 if (verified) {
-                    Log.d(TAG, "is dual class and verified.");
+                    if (DEBUG) Log.d(TAG, "is dual class and verified.");
                     verify(cls);
                 } else {
-                    Log.d(TAG, "is dual class, but not verified.");
+                    if (DEBUG) Log.d(TAG, "is dual class, but not verified.");
                 }
             } else if (cls.size() > 2) {
-                Log.d(TAG, "is multi class and auto-verified.");
+                if (DEBUG) Log.d(TAG, "is multi class and auto-verified.");
                 verify(cls);
             }
             return combine(cls);
@@ -157,7 +158,7 @@ public class VerifyingWifiLocationCalculator {
             @Override
             public double getWeight(Location location) {
                 double weight = calculateWeight(location, finalMinSignal, finalMaxSignal);
-                Log.d(TAG, String.format("Using with weight=%f mac=%s sig=%d acc=%f lat=%f lon=%f", weight,
+                if (DEBUG) Log.d(TAG, String.format("Using with weight=%f mac=%s sig=%d acc=%f lat=%f lon=%f", weight,
                         location.getExtras().getString(LocationRetriever.EXTRA_MAC_ADDRESS),
                         location.getExtras().getInt(LocationRetriever.EXTRA_SIGNAL_LEVEL), location.getAccuracy(),
                         location.getLatitude(), location.getLongitude()));

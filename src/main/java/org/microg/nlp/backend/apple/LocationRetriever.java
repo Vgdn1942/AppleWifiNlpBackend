@@ -18,6 +18,7 @@ package org.microg.nlp.backend.apple;
 
 import android.location.Location;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.squareup.wire.Wire;
 
@@ -34,6 +35,7 @@ import java.util.List;
 import javax.net.ssl.HttpsURLConnection;
 
 public class LocationRetriever {
+    private static final String TAG = "AppleNlpLocationRetriever";
     public static final String EXTRA_CHANNEL = "CHANNEL";
     public static final String EXTRA_MAC_ADDRESS = "MAC_ADDRESS";
     public static final String EXTRA_SIGNAL_LEVEL = "SIGNAL_LEVEL";
@@ -176,22 +178,26 @@ public class LocationRetriever {
     }
 
     public Collection<Location> retrieveLocations(String... macs) throws IOException {
-        Request request = createRequest(macs);
-        byte[] byteb = request.toByteArray();
-        byte[] bytes = combineBytes(APPLE_MAGIC_BYTES, byteb, (byte) byteb.length);
-        HttpsURLConnection connection = createConnection();
-        prepareConnection(connection, bytes.length);
-        OutputStream out = connection.getOutputStream();
-        out.write(bytes);
-        out.flush();
-        out.close();
-        InputStream in = connection.getInputStream();
-        in.skip(10);
-        Response response = wire.parseFrom(readStreamToEnd(in), Response.class);
-        in.close();
         Collection<Location> locations = new ArrayList<Location>();
-        for (Response.ResponseWifi wifi : response.wifis) {
-            locations.add(fromResponseWifi(wifi));
+        try {
+            Request request = createRequest(macs);
+            byte[] byteb = request.toByteArray();
+            byte[] bytes = combineBytes(APPLE_MAGIC_BYTES, byteb, (byte) byteb.length);
+            HttpsURLConnection connection = createConnection();
+            prepareConnection(connection, bytes.length);
+            OutputStream out = connection.getOutputStream();
+            out.write(bytes);
+            out.flush();
+            out.close();
+            InputStream in = connection.getInputStream();
+            in.skip(10);
+            Response response = wire.parseFrom(readStreamToEnd(in), Response.class);
+            in.close();
+            for (Response.ResponseWifi wifi : response.wifis) {
+                locations.add(fromResponseWifi(wifi));
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Exception: " + e);
         }
         return locations;
     }

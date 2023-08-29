@@ -34,6 +34,7 @@ public class BackendService extends HelperLocationBackendService
         implements WiFiBackendHelper.Listener {
 
     private static final String TAG = "AppleNlpBackendService";
+    private static final boolean DEBUG = false;
     private static final long THIRTY_DAYS = 2592000000L;
     private final LocationRetriever retriever = new LocationRetriever();
     private WiFiBackendHelper backendHelper;
@@ -51,7 +52,7 @@ public class BackendService extends HelperLocationBackendService
                         now.add(s);
                         if (now.size() == 10) break;
                     }
-                    Log.d(TAG, "Requesting Apple for " + now.size() + " locations");
+                    if (DEBUG) Log.d(TAG, "Requesting Apple for " + now.size() + " locations");
                     try {
                         Collection<Location> response = retriever.retrieveLocations(now);
                         WifiLocationDatabase.Editor editor = database.edit();
@@ -73,7 +74,7 @@ public class BackendService extends HelperLocationBackendService
                         // Forcing update, because new mapping data is available
                         report(calculate(backendHelper.getWiFis()));
                     } catch (Exception e) {
-                        Log.w(TAG, e);
+                        Log.e(TAG, "Exception: " + e);
                     }
                 }
                 Thread t = thread;
@@ -119,7 +120,7 @@ public class BackendService extends HelperLocationBackendService
                 unknown.add(wifi.getBssid());
             }
         }
-        Log.d(TAG, "Found " + wiFis.size() + " wifis, of whom " + locations.size() + " with " +
+        if (DEBUG) Log.d(TAG, "Found " + wiFis.size() + " wifis, of whom " + locations.size() + " with " +
                 "location and " + unknown.size() + " unknown.");
         if (!unknown.isEmpty()) {
             if (toRetrieve == null) {
@@ -137,7 +138,7 @@ public class BackendService extends HelperLocationBackendService
 
     @Override
     protected synchronized void onOpen() {
-        Log.d(TAG, "onOpen");
+        if (DEBUG) Log.d(TAG, "onOpen");
         super.onOpen();
         database = new WifiLocationDatabase(this);
         calculator = new VerifyingWifiLocationCalculator("apple", database);
@@ -145,7 +146,7 @@ public class BackendService extends HelperLocationBackendService
 
     @Override
     protected synchronized void onClose() {
-        Log.d(TAG, "onClose");
+        if (DEBUG) Log.d(TAG, "onClose");
         super.onClose();
         calculator = null;
         database.close();

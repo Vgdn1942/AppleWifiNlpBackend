@@ -44,6 +44,7 @@ import java.util.List;
 
 public class PregrabActivity extends Activity {
     private static final String TAG = PregrabActivity.class.getName();
+    private static final boolean DEBUG = false;
 
     private final List<WifiOverlayItem> items = new ArrayList<>();
     private MapView mapView;
@@ -99,7 +100,7 @@ public class PregrabActivity extends Activity {
                                 mapView.getMapCenter().getLatitude(),
                                 mapView.getMapCenter().getLongitude(), 0),
                                 1, MAX_AGE).get(0);
-                        Log.d(TAG, "Based on location: " + next);
+                        if (DEBUG) Log.d(TAG, "Based on location: " + next);
                         String now = next.getExtras().getString("MAC_ADDRESS");
                         try {
                             Collection<Location> response = retriever.retrieveLocations(now);
@@ -112,14 +113,14 @@ public class PregrabActivity extends Activity {
                                 }
                             }
                             editor.end();
-                            Log.d(TAG, "Downloaded " + response.size() + " APs at " + next
+                            if (DEBUG) Log.d(TAG, "Downloaded " + response.size() + " APs at " + next
                                     .getLatitude() + "/" + next.getLongitude() + " near " +
                                     mapView.getMapCenter().getLatitude() + "/" + mapView
                                     .getMapCenter().getLongitude());
                             next.setAccuracy(radius);
                             items.add(new WifiOverlayItem(next));
                         } catch (IOException e) {
-                            Log.w(TAG, e);
+                            Log.e(TAG, "Exception: " + e);
                         }
                         runOnUiThread(new Runnable() {
                             @Override
